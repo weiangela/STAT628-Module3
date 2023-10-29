@@ -85,6 +85,7 @@ df_restaurant %>%
 # Is open
 df_restaurant %>% 
   ggplot() + 
-  geom_bar(aes(x = is_open, fill = factor(is_open)))
+  geom_bar(aes(x = is_open, 
+               fill = factor(is_open)))
 ```
 
