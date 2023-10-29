@@ -1,0 +1,90 @@
+---
+title: "Business_EDA"
+author: "Xiaoyang Wang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = F,
+                      message = F)
+```
+
+```{r}
+library(jsonlite)
+library(tidyverse)
+
+library(wordcloud)
+library(tm)
+library(RColorBrewer)
+
+# library(plotly)
+```
+
+# Read Data
+```{r, results='hide'}
+df_business = stream_in(file("../yelp_Fall2023/business.json"))
+
+# Filter out restaurrants
+df_restaurant = df_business %>% 
+  filter(grepl("Restaurants", categories))
+```
+
+# Word Cloud
+```{r}
+texts <- df_restaurant$categories
+
+# Create Corpus
+corpus <- Corpus(VectorSource(texts))
+
+# text preprocessing
+corpus <- tm_map(corpus, content_transformer(tolower)) # tolower
+corpus <- tm_map(corpus, removePunctuation)            # Remove punctuation
+corpus <- tm_map(corpus, removeNumbers)                # Remove numbers
+corpus <- tm_map(corpus, removeWords, stopwords("en")) # Remove stop words
+
+# Create term-document matrix
+tdm <- TermDocumentMatrix(corpus)
+
+# Calculate term frequency
+word_freqs <- sort(rowSums(as.matrix(tdm)), decreasing = TRUE)
+word_freqs <- data.frame(word = names(word_freqs), freq = word_freqs)
+
+# Generate word cloud
+set.seed(7)
+wordcloud(words = word_freqs$word, freq = word_freqs$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+
+# EDA
+```{r}
+# Stars
+df_restaurant %>% 
+  ggplot() + 
+  geom_histogram(aes(x = stars, 
+                     fill = factor(is_open)
+                     ),
+                 # fill = "royalblue",
+                 position = "dodge")
+
+# Review Count
+df_restaurant %>% 
+  ggplot() + 
+  geom_density(aes(x = review_count,
+                   fill = factor(is_open),
+                   col = factor(is_open)
+                     ),
+                 # fill = "royalblue",
+                 # binwidth = 200,
+                 position = "dodge",
+                 alpha = 0.5) + 
+  scale_x_log10()
+
+# Is open
+df_restaurant %>% 
+  ggplot() + 
+  geom_bar(aes(x = is_open, fill = factor(is_open)))
+```
+
