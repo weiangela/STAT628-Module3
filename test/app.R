@@ -126,25 +126,25 @@ server <- function(input, output) {
                            end = "2023-11-18")
     })
     
-    observe({
-      # ISSUE WITH OBSERVE
-      categories_sub <- input$categoryInput
-      contains_all_substrings <- sapply(bu_df$categories, function(string) all(sapply(categories_sub, function(pattern) grepl(pattern, string))))
-      
-      sub_bu_df <- bu_df %>%
-        st_drop_geometry() %>%
-        filter(contains_all_substrings)
-      
-      new_categories <- sub_bu_df %>%
-        select(categories) %>%
-        lapply(function(x) unlist(strsplit(x, split = ","))) %>%
-        unlist() %>%
-        trimws() %>%
-        unique() %>%
-        sort()
-      
-      updateSelectInput("categoryInput", choices = new_categories)
-    })
+    # observe({
+    #   # ISSUE WITH OBSERVE
+    #   categories_sub <- input$categoryInput
+    #   contains_all_substrings <- sapply(bu_df$categories, function(string) all(sapply(categories_sub, function(pattern) grepl(pattern, string))))
+    #   
+    #   sub_bu_df <- bu_df %>%
+    #     st_drop_geometry() %>%
+    #     filter(contains_all_substrings)
+    #   
+    #   new_categories <- sub_bu_df %>%
+    #     select(categories) %>%
+    #     lapply(function(x) unlist(strsplit(x, split = ","))) %>%
+    #     unlist() %>%
+    #     trimws() %>%
+    #     unique() %>%
+    #     sort()
+    #   
+    #   updateSelectInput("categoryInput", choices = new_categories)
+    # })
     
     output$mapPlot <- renderTmap({
       # ID Census layer choice
