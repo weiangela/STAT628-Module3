@@ -18,7 +18,7 @@ covid_tab = tabPanel("COVID Trends", titlePanel("Effects of COVID - Activity"),
                        actionButton("midCOVIDButton", "During COVID"), 
                        actionButton("resetButton", "Reset Dates")),
                      mainPanel(
-                       plotOutput("tripTrendOutput"), 
-                       plotOutput("tripMonthOutput")
+                       plotlyOutput("tripTrendOutput"), 
+                       plotlyOutput("tripMonthOutput")
                      )
 )
