@@ -5,7 +5,8 @@ source("./tabs/covid_tab.R")
 
 # Define UI for application
 ui <- fluidPage(
-  themeSelector(),
+  # themeSelector(),
+  theme = shinytheme("united"),
   navbarPage(title = "Philadelphia Restaurants",
              map_tab, 
              gpt_tab, 

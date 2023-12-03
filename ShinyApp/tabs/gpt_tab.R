@@ -12,21 +12,21 @@ wordcloud_subtab = tabPanel("Word Cloud",
                             fluidRow(
                               
                               column(6, 
-                                     tags$h3("Postive Sentiment - Pre-COVID"),
+                                     tags$h3("Postive Words Before COVID"),
                                      wordcloud2Output("PositiveBeforeWC")), 
                               
                               column(6, 
-                                     tags$h3("Postive Sentiment - Mid-COVID"),
+                                     tags$h3("Postive Words After COVID"),
                                      wordcloud2Output("PositiveAfterWC"))
                             ),
                             fluidRow(
                               
                               column(6, 
-                                     tags$h3("Negative Sentiment - Pre-COVID"),
+                                     tags$h3("Negative Words Before COVID"),
                                      wordcloud2Output("NegativeBeforeWC")), 
                               
                               column(6, 
-                                     tags$h3("Negative Sentiment - Mid-COVID"),
+                                     tags$h3("Negative Words After COVID"),
                                      wordcloud2Output("NegativeAfterWC"))
                             ))
 
@@ -52,7 +52,7 @@ gpt_subtab = tabPanel("AskGPT",
                       ))
 
 
-gpt_tab = tabPanel("For Owners...", 
+gpt_tab = tabPanel("ChatBot Interaction", 
                    titlePanel("For Restaurant Owners"), 
                    sidebarPanel(
                      h3("Instructions:"),
@@ -80,38 +80,47 @@ gpt_tab = tabPanel("For Owners...",
                      
                      # Plots
                      h4("Graph and Word Cloud"),
-                     pickerInput("restaurantNameInput", "Select your restaurant!", 
-                                 choices = NULL,
-                                 multiple = T,
-                                 options = list(
-                                   `actions-box` = T,
-                                   `live-search` = T
-                                 )),
-                     sliderInput("n_words", "Number of words",
-                                 min=5,
-                                 max=15,
-                                 step=1,
-                                 value=10),
+                     wellPanel(
+                       
+                       pickerInput("restaurantNameInput", "Select your restaurant!", 
+                                   choices = NULL,
+                                   multiple = F,
+                                   options = list(
+                                     # `actions-box` = T,
+                                     `live-search` = T
+                                   )),
+                       sliderInput("n_words", "Number of words",
+                                   min=5,
+                                   max=15,
+                                   step=1,
+                                   value=10)
+                     )
+                     ,
                      # GPT
                      h4("ChatGPT"),
-                     textInput("api_key", "API Key", "sk-PLACEYOUROWNAPIKEYHERE"),
-                     tags$p("Find your own OpenAI API:", 
-                            tags$a(href = "https://platform.openai.com/account/api-keys", target="_blank", "https://platform.openai.com/account/api-keys")
-                     ),tags$hr(),
-                     selectInput("model_name", "Model Name",
-                                 choices = c("gpt-4", "gpt-4-0314", 
-                                             "gpt-3.5-turbo-0301", 
-                                             "gpt-3.5-turbo"), 
-                                 selected = "gpt-3.5-turbo"),
-                     actionButton("positive_Q", "AskGPT_Positive"),
-                     actionButton("negative_Q", "AskGPT_Negative")
+                     wellPanel(
+                       textInput("api_key", "API Key", "sk-PLACEYOUROWNAPIKEYHERE"),
+                       tags$p("Find your own OpenAI API:", 
+                              tags$a(href = "https://platform.openai.com/account/api-keys", target="_blank", "https://platform.openai.com/account/api-keys")
+                       ),tags$hr(),
+                       selectInput("model_name", "Model Name",
+                                   choices = c("gpt-4", "gpt-4-0314", 
+                                               "gpt-3.5-turbo-0301", 
+                                               "gpt-3.5-turbo"), 
+                                   selected = "gpt-3.5-turbo"),
+                       actionButton("positive_Q", "AskGPT_Positive"),
+                       actionButton("negative_Q", "AskGPT_Negative")
+                     ),
+                     plotOutput("density_sent")
                    ), 
                    mainPanel(
                      textOutput("greetings"),
                      dataTableOutput("basicInfoTbl"), 
+                     # p("How do people feel about your restaurant?"), 
                      tabsetPanel(
                        bar_subtab,
                        wordcloud_subtab,
                        gpt_subtab
-                     )
+                     ),
+                     # p("Any other questions? Ask ChatGPT!")
                    ))

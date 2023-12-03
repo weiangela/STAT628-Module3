@@ -10,7 +10,11 @@ map_tab = tabPanel("Map",titlePanel("Restaurants Map"),
                           "Select business attributes to be shown", 
                           choices = c("Stars", 
                                       "Review Count") # update the list based on what actually matters
-             )
+             ), 
+             selectInput("categoryInput", 
+                         "Select business categories", 
+                         choices = categories, 
+                         multiple = TRUE)
            ),
            mainPanel(
              tmapOutput("mapPlot", height = 800)
