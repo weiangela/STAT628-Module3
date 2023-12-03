@@ -12,21 +12,21 @@ wordcloud_subtab = tabPanel("Word Cloud",
                             fluidRow(
                               
                               column(6, 
-                                     tags$h3("Postive Words Before COVID"),
+                                     tags$h3("Postive Sentiment - Pre-COVID"),
                                      wordcloud2Output("PositiveBeforeWC")), 
                               
                               column(6, 
-                                     tags$h3("Postive Words After COVID"),
+                                     tags$h3("Postive Sentiment - Mid-COVID"),
                                      wordcloud2Output("PositiveAfterWC"))
                             ),
                             fluidRow(
                               
                               column(6, 
-                                     tags$h3("Negative Words Before COVID"),
+                                     tags$h3("Negative Sentiment - Pre-COVID"),
                                      wordcloud2Output("NegativeBeforeWC")), 
                               
                               column(6, 
-                                     tags$h3("Negative Words After COVID"),
+                                     tags$h3("Negative Sentiment - Mid-COVID"),
                                      wordcloud2Output("NegativeAfterWC"))
                             ))
 
@@ -52,7 +52,7 @@ gpt_subtab = tabPanel("AskGPT",
                       ))
 
 
-gpt_tab = tabPanel("ChatBot Interaction", 
+gpt_tab = tabPanel("For Owners...", 
                    titlePanel("For Restaurant Owners"), 
                    sidebarPanel(
                      h3("Instructions:"),
@@ -109,11 +109,9 @@ gpt_tab = tabPanel("ChatBot Interaction",
                    mainPanel(
                      textOutput("greetings"),
                      dataTableOutput("basicInfoTbl"), 
-                     # p("How do people feel about your restaurant?"), 
                      tabsetPanel(
                        bar_subtab,
                        wordcloud_subtab,
                        gpt_subtab
-                     ),
-                     # p("Any other questions? Ask ChatGPT!")
+                     )
                    ))
