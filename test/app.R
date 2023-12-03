@@ -3,9 +3,11 @@ library(tmap)
 library(sf)
 library(tidymodels)
 library(ggplot2)
+library(plotly)
 library(scales)
 library(lubridate)
 
+restName <- "¡Juice!"
 bu_df <- read.csv("bu_df.csv") %>%
   select(-X, -business_id) %>%
   mutate(zip_code = as.factor(postal_code),
@@ -21,12 +23,12 @@ categories <- bu_df$categories %>%
   trimws() %>%
   unique() %>%
   sort()
+restaurants <- sort(unique(bu_df$name))
 
 phil_map <- read_sf("philadelphia_census_data.geojson") %>%
   mutate(blw_pct_txt = sprintf("%.2f%%", below_poverty_pct * 100), 
          crime_ct_bin = cut(crime_count, breaks = c(seq(0, 1500, by = 150), 3500)))
 
-hist(phil_map$crime_count, breaks =  c(seq(0, 1500, by = 150), 3500))
 trip_df <- read.csv("Trips_by_Distance.csv") %>%
   mutate(
     Date = as.Date(Date, format="%Y/%m/%d"), 
@@ -81,7 +83,27 @@ ui <- fluidPage(
              tmapOutput("mapPlot", height = 800)
           )
     )), 
-    tabPanel("ChatBot Interaction"), 
+    tabPanel("ChatBot Interaction", titlePanel("For Restaurant Owners"), 
+             sidebarPanel(
+               selectizeInput("restaurantNameInput", "Select your restaurant!", 
+                           choices = NULL)
+             ), 
+             mainPanel(
+               textOutput("greetings"),
+               tableOutput("basicInfoTbl"), 
+               p("How do people feel about your restaurant?"), 
+               actionButton("graphButton", "Graphs"),
+               actionButton("wordCloudButton", "Word Cloud"),
+               fluidRow(
+                 column(4, renderPlot("PositiveBeforeGraph")), 
+                 column(4, renderPlot("PositiveAfterGraph"))
+               ),
+               fluidRow(
+                 column(4, renderPlot("NegativeBeforeGraph")), 
+                 column(4, renderPlot("NegativeAfterGraph"))
+               ), 
+               p("Any other questions? Ask ChatGPT!")
+             )), 
     tabPanel("COVID Trends", titlePanel("Effects of COVID - Activity"), 
              sidebarPanel(
                dateRangeInput("dateInput", 
@@ -108,8 +130,8 @@ ui <- fluidPage(
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
-  
+server <- function(input, output, session) {
+    # Splash Page
     observeEvent(input$preCOVIDButton, {
       updateDateRangeInput(inputId = "dateInput", 
                            start = "2019-01-01", 
@@ -180,6 +202,24 @@ server <- function(input, output) {
                              "Review Count"="review_count", 
                              "Restaurant Categories"="categories"))# update the list based on what actually matters
     })
+    
+    ####### Restaurant owner page#####
+    updateSelectizeInput(session, 'restaurantNameInput', choices = restaurants, server = TRUE)
+    restName <- reactive({input$restaurantNameInput})
+    output$greetings <- renderText({
+      paste("Hello, ", restName())
+    })
+    
+    output$basicInfoTbl <- renderTable({
+      bu_df %>% 
+        select(name, postal_code, stars, review_count, categories, video, dj, NoiseLevel, dessert, street, valet, DogsAllowed, classy, touristy)
+        
+      #rownames(temp) <- c("Name", "Postal Code", "Average Star Rating", "Review Count", "Yelp Business Categories", "Music - Video", "Music - DJ", "Noise Level", "Dessert Offered", "Street Parking Available", "Valet Parking Available", "Dogs Allowed", "Ambiance - Classy", "Ambiance - Touristy")
+      
+    })
+    
+    
+    # COVID Trips Page
     output$tripTrendOutput <- renderPlot({
       trip_df_sub <- trip_df %>%
         filter(Date >= format(input$dateInput[1]), Date <= format(input$dateInput[2]))
@@ -202,6 +242,8 @@ server <- function(input, output) {
           y = input$tripMetricInput
         )
     })
+    
+    ########## UPDATE WITH PLOTLY #########
     output$tripMonthOutput <- renderPlot({
       ggplot(pre_vs_mid, aes(x = Month, y = value, fill = time_period)) + 
         geom_col(position = "dodge") + 
