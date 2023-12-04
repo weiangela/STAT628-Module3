@@ -12,21 +12,21 @@ wordcloud_subtab = tabPanel("Word Cloud",
                             fluidRow(
                               
                               column(6, 
-                                     tags$h3("Postive Words Before COVID"),
+                                     tags$h4("Postive Sentiment - Pre-COVID"),
                                      wordcloud2Output("PositiveBeforeWC")), 
                               
                               column(6, 
-                                     tags$h3("Postive Words After COVID"),
+                                     tags$h4("Positive Sentiment - Mid-COVID"),
                                      wordcloud2Output("PositiveAfterWC"))
                             ),
                             fluidRow(
                               
                               column(6, 
-                                     tags$h3("Negative Words Before COVID"),
+                                     tags$h4("Negative Sentiment - Pre-COVID"),
                                      wordcloud2Output("NegativeBeforeWC")), 
                               
                               column(6, 
-                                     tags$h3("Negative Words After COVID"),
+                                     tags$h4("Negative Sentiment - Mid-COVID"),
                                      wordcloud2Output("NegativeAfterWC"))
                             ))
 
@@ -45,14 +45,13 @@ gpt_subtab = tabPanel("AskGPT",
                       ),
                       fluidRow(
                         column(10,textAreaInput(inputId = "user_message", placeholder = "Enter your message:", label="Your Question", width = "100%")),
-                        # tags$p("Click:"),
                         column(1,actionButton("send_message", "Send",
                                               icon = icon("play"),
                                               height = "350px"))
                       ))
 
 
-gpt_tab = tabPanel("ChatBot Interaction", 
+gpt_tab = tabPanel("For Owners...", 
                    titlePanel("For Restaurant Owners"), 
                    sidebarPanel(
                      h3("Instructions:"),
@@ -114,13 +113,12 @@ gpt_tab = tabPanel("ChatBot Interaction",
                      plotOutput("density_sent")
                    ), 
                    mainPanel(
-                     textOutput("greetings"),
+                     h3("Basic Information"),
                      dataTableOutput("basicInfoTbl"), 
-                     # p("How do people feel about your restaurant?"), 
+                     h3("Visualization and Interaction"),
                      tabsetPanel(
                        bar_subtab,
                        wordcloud_subtab,
                        gpt_subtab
                      ),
-                     # p("Any other questions? Ask ChatGPT!")
                    ))

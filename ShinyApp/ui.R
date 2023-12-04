@@ -9,7 +9,7 @@ ui <- fluidPage(
   theme = shinytheme("united"),
   navbarPage(title = "Philadelphia Restaurants",
              map_tab, 
-             gpt_tab, 
-             covid_tab
+             covid_tab,
+             gpt_tab
   )
 )

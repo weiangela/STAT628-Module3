@@ -18,26 +18,6 @@ server <- function(input, output, session) {
                          end = "2023-11-18")
   })
   
-  # observe({
-  #   # ISSUE WITH OBSERVE
-  #   categories_sub <- input$categoryInput
-  #   contains_all_substrings <- sapply(bu_df$categories, function(string) all(sapply(categories_sub, function(pattern) grepl(pattern, string))))
-  #   
-  #   sub_bu_df <- bu_df %>%
-  #     st_drop_geometry() %>%
-  #     filter(contains_all_substrings)
-  #   
-  #   new_categories <- sub_bu_df %>%
-  #     select(categories) %>%
-  #     lapply(function(x) unlist(strsplit(x, split = ","))) %>%
-  #     unlist() %>%
-  #     trimws() %>%
-  #     unique() %>%
-  #     sort()
-  #   
-  #   updateSelectInput("categoryInput", choices = new_categories)
-  # })
-  
   output$mapPlot <- renderTmap({
     # ID Census layer choice
     layer_choice <- switch(input$censusLayerInput, 
@@ -80,10 +60,7 @@ server <- function(input, output, session) {
                       pull(name))
   
   restName <- reactive({input$restaurantNameInput})
-  # output$greetings <- renderText({
-  #   paste("Hello, ", restName())
-  # })
-  # 
+
   output$density_sent = renderPlot({
     plot_density(input$restaurantNameInput, "")
   })
@@ -91,14 +68,14 @@ server <- function(input, output, session) {
   output$basicInfoTbl <- renderDataTable(
     datatable(
       bu_df %>%
+        as.data.frame() %>% 
         select(name, postal_code, stars, review_count, categories, video, dj, NoiseLevel, dessert, street, valet, DogsAllowed, classy, touristy) %>% 
         filter(name %in% restName()),
       filter = "top",
       rownames = F,
-      options = list(# scrollY = 100,
-                     scrollX = 500,
+      colnames = c("Name", "Postal Code", "Average Star Rating", "Review Count", "Yelp Business Categories", "Music - Video", "Music - DJ", "Noise Level", "Dessert Offered", "Street Parking Available", "Valet Parking Available", "Dogs Allowed", "Ambiance - Classy", "Ambiance - Touristy"),
+      options = list(scrollX = 500,
                      deferRender = TRUE,
-                     # pageLength = 10,
                      autoWidth = T
       )
     )
@@ -113,7 +90,7 @@ server <- function(input, output, session) {
       temp = get_temp(input$restaurantNameInput, "", T, F)
       plot_temp = plot_bar(temp$Full_df, temp$Pivot_df, n=input$n_words, color = "springgreen3")
       ggplotly(plot_temp$plot + 
-                 ggtitle("Postive Words Before COVID"))
+                 ggtitle("Postive Sentiment - Pre-COVID"))
     }
   })
   output$PositiveAfterGraph = renderPlotly({
@@ -124,7 +101,7 @@ server <- function(input, output, session) {
       temp = get_temp(input$restaurantNameInput, "", T, T)
       plot_temp = plot_bar(temp$Full_df, temp$Pivot_df, n=input$n_words, color = "tomato")
       ggplotly(plot_temp$plot + 
-                 ggtitle("Postive Words During COVID"))
+                 ggtitle("Postive Sentiment - Mid-COVID"))
     }
   })
   output$NegativeBeforeGraph = renderPlotly({
@@ -135,7 +112,7 @@ server <- function(input, output, session) {
       temp = get_temp(input$restaurantNameInput, "", F, F)
       plot_temp = plot_bar(temp$Full_df, temp$Pivot_df, n=input$n_words, color = "royalblue")
       ggplotly(plot_temp$plot + 
-                 ggtitle("Negative Words Before COVID"))
+                 ggtitle("Negative Sentiment - Pre-COVID"))
     }
   })
   output$NegativeAfterGraph = renderPlotly({
@@ -146,7 +123,7 @@ server <- function(input, output, session) {
       temp = get_temp(input$restaurantNameInput, "", F, T)
       plot_temp = plot_bar(temp$Full_df, temp$Pivot_df, n=input$n_words, color = "lightcoral")
       ggplotly(plot_temp$plot + 
-                 ggtitle("Negative Words During COVID"))
+                 ggtitle("Negative Sentiment - Mid-COVID"))
     }
   })
   ##### Word Cloud #####
@@ -183,7 +160,7 @@ server <- function(input, output, session) {
     if (length(input$restaurantNameInput) == 0){
       NULL
     }else{
-      # Positive, before covid
+      # Negative, before covid
       temp = get_temp(input$restaurantNameInput, "", F, T)
       plot_word_cloud(temp$Pivot_df)
     }
@@ -290,7 +267,7 @@ server <- function(input, output, session) {
   })
   
   # COVID Trips Page
-  output$tripTrendOutput <- renderPlot({
+  output$tripTrendOutput <- renderPlotly({
     trip_df_sub <- trip_df %>%
       filter(Date >= format(input$dateInput[1]), Date <= format(input$dateInput[2]))
     
@@ -300,26 +277,28 @@ server <- function(input, output, session) {
                               "# of People Not Staying Home"=trip_df_sub$Population.Not.Staying.at.Home, 
                               "# of Trips"=trip_df_sub$Number.of.Trips)
     y_label <- switch(input$tripMetricInput, 
-                      "Proportion of People Staying Home" = "Proportion of People Staying HOme", 
+                      "Proportion of People Staying Home" = "Proportion of People Staying Home", 
                       "# of People Staying Home"="# of People Staying Home [Ten Thousand]", 
                       "# of People Not Staying Home"="# of People Staying Home [Ten Thousand]", 
                       "# of Trips"="Trips [Millions]")
-    ggplot(trip_df_sub, aes(Date, metric_selected)) + 
+    g2 <- ggplot(trip_df_sub, aes(Date, metric_selected)) + 
       geom_line() + 
       geom_smooth() + 
       labs(
         x = "Date", 
-        y = input$tripMetricInput
+        y = y_label
       )
+    ggplotly(g2)
   })
   
-  ########## UPDATE WITH PLOTLY #########
-  output$tripMonthOutput <- renderPlot({
-    ggplot(pre_vs_mid, aes(x = Month, y = value, fill = time_period)) + 
+  output$tripMonthOutput <- renderPlotly({
+    g1 <- ggplot(pre_vs_mid, aes(x = Month, y = value, fill = time_period)) + 
       geom_col(position = "dodge") + 
       labs(x = "", 
            y = "Average Number of Trips Per Month [Millions]", 
            fill = "Time Period"
       )
+    
+    ggplotly(g1)
   })
 }

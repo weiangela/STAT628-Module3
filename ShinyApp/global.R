@@ -25,7 +25,7 @@ library(wordcloud2)
 source("sent_shiny.R")
 
 restName <- "¡Juice!"
-bu_df <- read.csv("bu_df.csv") %>%
+bu_df <- read.csv("./data/bu_df.csv") %>%
   select(-X, -business_id) %>%
   mutate(zip_code = as.factor(postal_code),
          star_bin = as.factor(stars), 
@@ -42,11 +42,11 @@ categories <- bu_df$categories %>%
   sort()
 restaurants <- sort(unique(bu_df$name))
 
-phil_map <- read_sf("philadelphia_census_data.geojson") %>%
+phil_map <- read_sf("./data/philadelphia_census_data.geojson") %>%
   mutate(blw_pct_txt = sprintf("%.2f%%", below_poverty_pct * 100), 
          crime_ct_bin = cut(crime_count, breaks = c(seq(0, 1500, by = 150), 3500)))
 
-trip_df <- read.csv("Trips_by_Distance.csv") %>%
+trip_df <- read.csv("./data/Trips_by_Distance.csv") %>%
   mutate(
     Date = as.Date(Date, format="%Y/%m/%d"), 
     Year = year(Date), 
@@ -76,8 +76,9 @@ pre_vs_mid <- full_join(pre_covid_avg, mid_covid_avg, by = "Month", suffix = c("
 
 
 ##### Sentiment #####
-df_review = read.csv("./reviews_with_sentiment.csv")
-df_business = stream_in(file("./philadelphia_business_info.json"))
+
+df_review = read.csv("./data/reviews_with_sentiment.csv")
+df_business = stream_in(file("./data/philadelphia_business_info.json"))
 
 df_review = df_review %>% 
   mutate(covid = (date > "2020-01-20 00:00:00"))
